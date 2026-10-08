@@ -69,6 +69,7 @@ namespace USBPal {
             Directory.CreateDirectory(folder);
             try {
                 var history=new History(Path.Combine(folder,"Events"));
+                TestTableRefresh();
                 var demo=new Device { Id="USB\\USBPAL_UI_TEST",Name="Example USB hub",Manufacturer="Example Hardware",Parent="",Present=true };
                 var demoState=new DeviceState(history.Append); DateTime demoTime=DateTime.UtcNow.AddSeconds(-30);
                 demoState.Transition(demo,true,demoTime,"Notification",true);
@@ -103,5 +104,19 @@ namespace USBPal {
             } catch(Exception e) { File.WriteAllText(Path.Combine(folder,"runtime-result.txt"),e.ToString()); return 1; }
         }
         static void Pump(int seconds) { DateTime until=DateTime.UtcNow.AddSeconds(seconds); while(DateTime.UtcNow<until) { Application.DoEvents(); Thread.Sleep(25); } }
+        static void TestTableRefresh() {
+            using(var host=new Form { Size=new Size(500,250) }) using(var table=new EventTable { Dock=DockStyle.Fill,AllowUserToAddRows=false,ReadOnly=true,SelectionMode=DataGridViewSelectionMode.FullRowSelect,MultiSelect=false }) {
+                table.Columns.Add(new DataGridViewTextBoxColumn { SortMode=DataGridViewColumnSortMode.Programmatic }); host.Controls.Add(table); host.Show();
+                var data=Enumerable.Range(0,100).Select(i=>new EventRow { Key=i.ToString(),Cells=new[]{i.ToString()},Event=new UsbEvent { Utc=DateTime.UtcNow.ToString("o"),Kind="Connected",Source="Test",Message=i.ToString(),Device=new Device { Id=i.ToString() } } }).ToList();
+                foreach(var row in data) row.Key=EventTable.Key(row.Event);
+                table.SetRows(data); table.CurrentCell=table.Rows[30].Cells[0]; table.ClearSelection(); table.Rows[30].Selected=true; table.FirstDisplayedScrollingRowIndex=20;
+                var selected=table.SelectedEvent; int updates=table.RefreshCount; table.SetRows(data);
+                Check(table.RefreshCount==updates,"Idle table update");
+                var added=new UsbEvent { Utc=DateTime.UtcNow.ToString("o"),Kind="Connected",Source="Test",Message="new",Device=new Device { Id="new" } };
+                data.Insert(0,new EventRow { Key=EventTable.Key(added),Event=added,Cells=new[]{"new"} }); table.SetRows(data);
+                Check(table.SelectedEvent==selected&&table.CurrentCell.RowIndex==31,"New events moved selected event/focus");
+                Check(table.FirstDisplayedScrollingRowIndex==21,"New events moved scrolled viewport"); host.Close();
+            }
+        }
     }
 }

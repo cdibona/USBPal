@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.1.1"
+  #define AppVersion "0.2.0"
 #endif
 #ifndef AppIdentity
   #define AppIdentity "USBPal.Windows"
@@ -74,5 +74,3 @@ begin
   Result := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', Release) and (Release >= 528040);
   if not Result then MsgBox('USBPal needs .NET Framework 4.8 or later. Install it from Microsoft, then run this installer again.', mbError, MB_OK);
 end;
-
-

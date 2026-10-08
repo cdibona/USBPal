@@ -1,4 +1,4 @@
-param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.1.1', [string]$Compiler)
+param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.2.0', [string]$Compiler)
 $ErrorActionPreference = 'Stop'
 if ((Get-Content "$PSScriptRoot/installer/USBPal.iss" -Raw) -notmatch "HasParameter\('/USBPALUPDATE'\)") { throw 'Installer must recognize the updater restart flag.' }
 & "$PSScriptRoot/build.ps1" -Version $Version
@@ -15,5 +15,3 @@ Write-Host "Installer: $installer"
 $latest = Join-Path $PSScriptRoot 'dist\USBPal-Setup-win-x64.exe'
 Copy-Item -LiteralPath $installer -Destination $latest -Force
 Set-Content -LiteralPath "$latest.sha256" -Value "$hash  $([IO.Path]::GetFileName($latest))" -Encoding ascii
-
-

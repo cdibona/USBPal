@@ -1,4 +1,4 @@
-param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.1.1')
+param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.2.0')
 $ErrorActionPreference = 'Stop'
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
 New-Item -ItemType Directory -Force "$PSScriptRoot/bin/v$Version" | Out-Null
@@ -15,5 +15,3 @@ if (Test-Path -LiteralPath $icon) { $iconArgs += "/win32icon:$icon" }
 if ($LASTEXITCODE -ne 0) { throw 'Compilation failed' }
 Copy-Item -LiteralPath "$PSScriptRoot/app.config" -Destination "$output.config" -Force
 Write-Host "Built bin/v$Version/USBPal.exe"
-
-

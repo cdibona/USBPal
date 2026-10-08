@@ -11,6 +11,7 @@ namespace USBPal {
     internal sealed class EventTable : DataGridView {
         List<EventRow> rows=new List<EventRow>();
         int sortColumn=-1; bool ascending;
+        bool updating;
         public int RefreshCount { get; private set; }
         public EventTable() {
             DoubleBuffered=true; VirtualMode=true;
@@ -21,6 +22,7 @@ namespace USBPal {
         }
         public UsbEvent SelectedEvent { get { return SelectedRows.Count>0&&SelectedRows[0].Index<rows.Count?rows[SelectedRows[0].Index].Event:null; } }
         public static string Key(UsbEvent e) { return string.Join("\u001f",new[]{e.Utc,e.Kind,e.Source,e.Device.Id,e.Message}); }
+        protected override void OnSelectionChanged(EventArgs e) { if(!updating) base.OnSelectionChanged(e); }
         public void SetRows(IEnumerable<EventRow> input,bool force=false) {
             var next=input.ToList();
             if(sortColumn>=0) next=ascending?next.OrderBy(r=>r.Cells[sortColumn],StringComparer.CurrentCultureIgnoreCase).ToList():next.OrderByDescending(r=>r.Cells[sortColumn],StringComparer.CurrentCultureIgnoreCase).ToList();
@@ -28,12 +30,17 @@ namespace USBPal {
             string selected=SelectedEvent==null?null:Key(SelectedEvent);
             int topIndex=FirstDisplayedScrollingRowIndex;
             string top=topIndex>=0&&topIndex<rows.Count?rows[topIndex].Key:null;
-            rows=next; RowCount=rows.Count; RefreshCount++;
-            ClearSelection(); int index=selected==null?-1:rows.FindIndex(r=>r.Key==selected);
-            if(index>=0) Rows[index].Selected=true;
-            if(topIndex>0&&top!=null) { int found=rows.FindIndex(r=>r.Key==top); if(found>=0) FirstDisplayedScrollingRowIndex=found; }
-            foreach(DataGridViewColumn c in Columns) c.HeaderCell.SortGlyphDirection=c.Index==sortColumn?(ascending?SortOrder.Ascending:SortOrder.Descending):SortOrder.None;
-            Invalidate();
+            updating=true;
+            try {
+                int column=CurrentCell==null?0:CurrentCell.ColumnIndex;
+                rows=next; RowCount=rows.Count; RefreshCount++;
+                int index=selected==null?-1:rows.FindIndex(r=>r.Key==selected);
+                if(index>=0) CurrentCell=Rows[index].Cells[column];
+                ClearSelection(); if(index>=0) Rows[index].Selected=true;
+                if(topIndex>=0&&rows.Count>0) { int found=topIndex==0?0:rows.FindIndex(r=>r.Key==top); if(found>=0) FirstDisplayedScrollingRowIndex=found; }
+                foreach(DataGridViewColumn c in Columns) c.HeaderCell.SortGlyphDirection=c.Index==sortColumn?(ascending?SortOrder.Ascending:SortOrder.Descending):SortOrder.None;
+                Invalidate();
+            } finally { updating=false; }
         }
     }
 }

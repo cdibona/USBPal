@@ -16,6 +16,18 @@ A Windows tray companion for diagnosing USB hubs that keep disconnecting. Inspir
 
 Disconnected devices remain in the tree for the current session and selected historical range. Details include Windows instance ID, ancestry, location/port information, manufacturer, and Windows problem code. The topology is Windows' PnP tree, including PCI/ACPI ancestors and USB composite interfaces; it is not an invented physical wiring diagram. A physical device may have several logical nodes. Devices without serial numbers can change identity when moved between ports.
 
+## Device nicknames and all-bus activity
+
+Select a device or hub in the tree, edit **Local nickname**, and click **Save nickname** (or press Enter). **Use default** restores the reported hardware maker when available; generic/unknown manufacturer strings fall back to the Windows device name. The original name stays alongside the nickname so devices from the same maker can be distinguished.
+
+Nicknames apply to the tree, history table, search, all-bus activity and CSV export. They are saved by Windows instance ID in `%LOCALAPPDATA%\USBPal\device-nicknames.json`, including for offline devices. These are USBPal display labels only: **no writes to the USB stack, device firmware, drivers, or Windows device properties**. Original JSONL history is not rewritten. Moving a device without a stable serial identity to another port can require a new nickname.
+
+The bottom log always shows the latest 24 hours across **all USB buses**, regardless of the selected device, search, event type, or time range above. It shows up to 500 recent meaningful events, omitting baseline enumeration noise. Plain-language entries explain disconnects, reconnect duration, device problems, recording gaps and power transitions. Double-click an entry to select its device; hover for full text and instance ID.
+
+An amber **POSSIBLE FLAPPING** summary names devices with at least three logged disconnects in the past five minutes, independently of the upper filters. Historical flap alerts remain in the log after the live summary clears. Reconnection durations describe observed events and can span recording gaps; scan-derived events explicitly indicate uncertain timing.
+
+Tree nodes update in place. Buffered virtual tables skip unchanged refreshes and preserve selection, sorting and scroll position as new events arrive. Nickname text in progress is left untouched by background refreshes.
+
 ## What gets recorded
 
 - Configuration Manager device-instance enumeration, start and removal notifications, captured with UTC timestamps on the notification callback and processed off that callback.
@@ -48,18 +60,18 @@ Installers are currently unsigned. SHA-256 checks verify download integrity; the
 ## Development
 
 ```powershell
-./build.ps1 -Version 0.1.1
-./bin/v0.1.1/USBPal.exe --show
-./package.ps1 -Version 0.1.1 -Compiler 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+./build.ps1 -Version 0.2.0
+./bin/v0.2.0/USBPal.exe --show
+./package.ps1 -Version 0.2.0 -Compiler 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
 ```
 
 Build uses the C# compiler shipped with Windows .NET Framework. Distribute both `USBPal.exe` and `USBPal.exe.config` for portable use. Inno Setup 6 is required only for packaging. `assets/make-icon.ps1` regenerates the multi-resolution UP icon; the USB logo is editable SVG.
 
 ```powershell
 # Each command below exits; wait for the process when scripting tests.
-./bin/v0.1.1/USBPal.exe --self-test
-./bin/v0.1.1/USBPal.exe --probe C:/absolute/path/topology.json
-./bin/v0.1.1/USBPal.exe --runtime-test C:/absolute/path/test-output
+./bin/v0.2.0/USBPal.exe --self-test
+./bin/v0.2.0/USBPal.exe --probe C:/absolute/path/topology.json
+./bin/v0.2.0/USBPal.exe --runtime-test C:/absolute/path/test-output
 ```
 
 `--self-test` checks transition deduplication, baseline semantics, flapping thresholds/expiry, historical ancestry filtering, event immutability, problem changes, history recovery, UTC filtering, CSV escaping, and updater validation. Results are beside the executable. `--runtime-test` reads real hardware, checks notification registration and persistence, renders a dashboard PNG, tests close/reopen, and exits. It uses isolated history, makes no startup changes and performs no update checks. Real hardware tests are local because hosted CI runners may have no USB tree.
@@ -67,4 +79,3 @@ Build uses the C# compiler shipped with Windows .NET Framework. Distribute both 
 Before tagging a release, build and run both tests on Windows, exercise a safe spare USB device, inspect a hub's descendant history, and test the installer/update cycle. Do not disconnect storage with pending writes. Version tags are the release source of truth.
 
 Native references: [CM_Register_Notification](https://learn.microsoft.com/en-us/windows/win32/api/cfgmgr32/nf-cfgmgr32-cm_register_notification), [CM_Get_Parent](https://learn.microsoft.com/en-us/windows/win32/api/cfgmgr32/nf-cfgmgr32-cm_get_parent), [device instance actions](https://learn.microsoft.com/en-us/windows/win32/api/cfgmgr32/ne-cfgmgr32-cm_notify_action).
-

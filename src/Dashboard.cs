@@ -155,7 +155,7 @@ namespace USBPal {
             if(lines.Count==0) activityStatus.Text+="  •  No activity logged in the last 24 hours";
             activity.SetRows(lines.Take(500).Select(line=>new EventRow { Key=EventTable.Key(line.Event),Event=line.Event,Cells=new[]{line.Event.Time.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff"),line.Text},Alert=line.Alert }));
         }
-        void Export() { using(var dialog=new SaveFileDialog { Filter="CSV files|*.csv",FileName="USBPal-events-"+DateTime.Now.ToString("yyyyMMdd-HHmm")+".csv" }) if(dialog.ShowDialog(this)==DialogResult.OK) { try { History.Export(dialog.FileName,filtered); UpdateStatus("Exported "+filtered.Count+" matching events."); } catch(Exception e) { UpdateStatus("Export failed: "+e.Message); } } }
+        void Export() { using(var dialog=new SaveFileDialog { Filter="CSV files|*.csv",FileName="USBPal-events-"+DateTime.Now.ToString("yyyyMMdd-HHmm")+".csv" }) if(dialog.ShowDialog(this)==DialogResult.OK) { try { History.Export(dialog.FileName,filtered,names); UpdateStatus("Exported "+filtered.Count+" matching events."); } catch(Exception e) { UpdateStatus("Export failed: "+e.Message); } } }
         protected override void Dispose(bool disposing) { if(disposing) timer.Dispose(); base.Dispose(disposing); }
     }
 }

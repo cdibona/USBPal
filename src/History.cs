@@ -37,10 +37,10 @@ namespace USBPal {
             return string.IsNullOrWhiteSpace(search)||string.Join(" ",new[]{e.Kind,e.Message,e.Device.Name,e.Device.Id,e.Device.Parent,e.Device.Manufacturer,e.Device.Location,string.Join(" ",e.Device.Ancestors)}).IndexOf(search,StringComparison.OrdinalIgnoreCase)>=0;
         }
         internal static string Csv(string s) { s=s??""; if(s.Length>0&&"=+-@\t\r".Contains(s[0])) s="'"+s; return "\""+s.Replace("\"","\"\"")+"\""; }
-        public static void Export(string path,IEnumerable<UsbEvent> events) {
+        public static void Export(string path,IEnumerable<UsbEvent> events,DeviceNames names=null) {
             using(var writer=new StreamWriter(path,false,new UTF8Encoding(true))) {
-                writer.WriteLine("utc,event,source,device,instance_id,parent_id,ancestors,location,problem,message");
-                foreach(var e in events) writer.WriteLine(string.Join(",",new[]{e.Utc,e.Kind,e.Source,e.Device.Name,e.Device.Id,e.Device.Parent,string.Join(" > ",e.Device.Ancestors),e.Device.Location,e.Device.Problem.ToString(),e.Message}.Select(Csv)));
+                writer.WriteLine("utc,event,source,device,instance_id,parent_id,ancestors,location,problem,message,nickname");
+                foreach(var e in events) writer.WriteLine(string.Join(",",new[]{e.Utc,e.Kind,e.Source,e.Device.Name,e.Device.Id,e.Device.Parent,string.Join(" > ",e.Device.Ancestors),e.Device.Location,e.Device.Problem.ToString(),e.Message,names==null?DeviceNames.Default(e.Device):names.Get(e.Device)}.Select(Csv)));
             }
         }
     }

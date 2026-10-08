@@ -15,7 +15,7 @@ jobs:
       - name: Choose version
         shell: pwsh
         run: |
-          $version = '0.1.1'
+          $version = '0.2.0'
           if ($env:GITHUB_REF_TYPE -eq 'tag') {
             if ($env:GITHUB_REF_NAME -notmatch '^v\d+\.\d+\.\d+$') { throw 'Use a vMAJOR.MINOR.PATCH tag' }
             $version = $env:GITHUB_REF_NAME.Substring(1)
@@ -57,4 +57,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create $env:GITHUB_REF_NAME ./dist/* --repo $env:GITHUB_REPOSITORY --verify-tag --title "USBPal $env:GITHUB_REF_NAME" --notes-file RELEASE_NOTES.md
-

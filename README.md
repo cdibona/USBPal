@@ -48,18 +48,18 @@ Installers are currently unsigned. SHA-256 checks verify download integrity; the
 ## Development
 
 ```powershell
-./build.ps1 -Version 0.1.0
-./bin/v0.1.0/USBPal.exe --show
-./package.ps1 -Version 0.1.0 -Compiler 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+./build.ps1 -Version 0.1.1
+./bin/v0.1.1/USBPal.exe --show
+./package.ps1 -Version 0.1.1 -Compiler 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
 ```
 
 Build uses the C# compiler shipped with Windows .NET Framework. Distribute both `USBPal.exe` and `USBPal.exe.config` for portable use. Inno Setup 6 is required only for packaging. `assets/make-icon.ps1` regenerates the multi-resolution UP icon; the USB logo is editable SVG.
 
 ```powershell
 # Each command below exits; wait for the process when scripting tests.
-./bin/v0.1.0/USBPal.exe --self-test
-./bin/v0.1.0/USBPal.exe --probe C:/absolute/path/topology.json
-./bin/v0.1.0/USBPal.exe --runtime-test C:/absolute/path/test-output
+./bin/v0.1.1/USBPal.exe --self-test
+./bin/v0.1.1/USBPal.exe --probe C:/absolute/path/topology.json
+./bin/v0.1.1/USBPal.exe --runtime-test C:/absolute/path/test-output
 ```
 
 `--self-test` checks transition deduplication, baseline semantics, flapping thresholds/expiry, historical ancestry filtering, event immutability, problem changes, history recovery, UTC filtering, CSV escaping, and updater validation. Results are beside the executable. `--runtime-test` reads real hardware, checks notification registration and persistence, renders a dashboard PNG, tests close/reopen, and exits. It uses isolated history, makes no startup changes and performs no update checks. Real hardware tests are local because hosted CI runners may have no USB tree.
@@ -67,3 +67,4 @@ Build uses the C# compiler shipped with Windows .NET Framework. Distribute both 
 Before tagging a release, build and run both tests on Windows, exercise a safe spare USB device, inspect a hub's descendant history, and test the installer/update cycle. Do not disconnect storage with pending writes. Version tags are the release source of truth.
 
 Native references: [CM_Register_Notification](https://learn.microsoft.com/en-us/windows/win32/api/cfgmgr32/nf-cfgmgr32-cm_register_notification), [CM_Get_Parent](https://learn.microsoft.com/en-us/windows/win32/api/cfgmgr32/nf-cfgmgr32-cm_get_parent), [device instance actions](https://learn.microsoft.com/en-us/windows/win32/api/cfgmgr32/ne-cfgmgr32-cm_notify_action).
+

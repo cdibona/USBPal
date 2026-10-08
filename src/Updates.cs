@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
@@ -50,6 +51,7 @@ namespace USBPal {
             status("Checking GitHub releases...");
             try {
                 ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+                using(var deadline=new CancellationTokenSource(TimeSpan.FromMinutes(3)))
                 using(var handler=new HttpClientHandler { AllowAutoRedirect=false }) using(var client=new HttpClient(handler) { Timeout=TimeSpan.FromMinutes(3) }) {
                     client.DefaultRequestHeaders.UserAgent.ParseAdd("USBPal/"+Current.ToString(3));
                     string json;
@@ -68,12 +70,12 @@ namespace USBPal {
                         var uri=new Uri(asset.Url); bool downloaded=false;
                         for(int redirects=0;redirects<5;redirects++) {
                             if(!ValidDownload(uri)) throw new InvalidDataException("Release download redirected to an unsupported host.");
-                            using(var request=Request(uri,true)) using(var response=await client.SendAsync(request,HttpCompletionOption.ResponseHeadersRead)) {
+                            using(var request=Request(uri,true)) using(var response=await client.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,deadline.Token)) {
                                 if((int)response.StatusCode>=300 && (int)response.StatusCode<400 && response.Headers.Location!=null) { uri=new Uri(uri,response.Headers.Location); continue; }
                                 response.EnsureSuccessStatusCode();
                                 using(var source=await response.Content.ReadAsStreamAsync()) using(var target=File.Create(partial)) {
                                     var buffer=new byte[65536]; long total=0; int read;
-                                    while((read=await source.ReadAsync(buffer,0,buffer.Length))>0) { total+=read; if(total>asset.Size) throw new InvalidDataException("Installer exceeds expected size."); await target.WriteAsync(buffer,0,read); }
+                                    while((read=await source.ReadAsync(buffer,0,buffer.Length,deadline.Token))>0) { total+=read; if(total>asset.Size) throw new InvalidDataException("Installer exceeds expected size."); await target.WriteAsync(buffer,0,read,deadline.Token); }
                                 }
                                 downloaded=true; break;
                             }

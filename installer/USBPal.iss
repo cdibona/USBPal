@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.1.0"
+  #define AppVersion "0.1.1"
 #endif
 #ifndef AppIdentity
   #define AppIdentity "USBPal.Windows"
@@ -53,7 +53,7 @@ begin
 end;
 function IsUSBPalUpdate: Boolean;
 begin
-  Result := HasParameter('/POWERPALUPDATE');
+  Result := HasParameter('/USBPALUPDATE');
 end;
 function LaunchParameters(Param: String): String;
 begin
@@ -74,4 +74,5 @@ begin
   Result := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', Release) and (Release >= 528040);
   if not Result then MsgBox('USBPal needs .NET Framework 4.8 or later. Install it from Microsoft, then run this installer again.', mbError, MB_OK);
 end;
+
 

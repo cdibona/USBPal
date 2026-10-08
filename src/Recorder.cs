@@ -36,11 +36,14 @@ namespace USBPal {
                 bool baseline=true;
                 while(!stopping) {
                     try {
+                        var batch=new List<Notice>(); Notice n; while(pending.TryDequeue(out n)) batch.Add(n);
                         var current=Devices.Scan();
                         lock(gate) {
                             if(baseline) { state.Reconcile(current,true); baseline=false; }
-                            Notice n; while(pending.TryDequeue(out n)) state.Native(n.Action,n.Id,n.Time,current);
-                            state.Reconcile(current,false);
+                            foreach(var notice in batch) state.Native(notice.Action,notice.Id,notice.Time,current);
+                            // Notifications arriving during enumeration belong to the next scan.
+                            // Never reconcile an older snapshot over a newer removal notification.
+                            if(pending.IsEmpty) state.Reconcile(current,false);
                         }
                         Flush();
                         Status="Recording • "+current.Count+" topology nodes • last scan "+DateTime.Now.ToString("HH:mm:ss")+windowsEvents.Status;

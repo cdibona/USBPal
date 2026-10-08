@@ -70,7 +70,7 @@ namespace USBPal {
                 d=new Device { Id=id,Name=id }; // Preserve even a device that vanished before enumeration.
             }
             if(action==9) Transition(d,false,time,"Notification",false);
-            else if(action==8) Transition(d,true,time,"Notification",false);
+            else if(action==8) { Write(d,"Started","Notification",time,"Windows started the device instance (also logged for restarts without removal)."); Transition(d,true,time,"Notification",false); }
             else if(action==7) Write(d,"Enumerated","Notification",time,"Windows enumerated device instance.");
         }
         public void Reconcile(Dictionary<string,Device> current,bool baseline) {

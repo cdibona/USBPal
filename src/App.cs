@@ -25,6 +25,10 @@ namespace USBPal {
             if(args.Contains("--self-test")) return Tests.Run();
             if(args.Length==2&&args[0]=="--probe") { try { File.WriteAllText(args[1],new JavaScriptSerializer().Serialize(Devices.Scan().Values.ToArray())); return 0; } catch(Exception e) { File.WriteAllText(args[1],e.ToString()); return 1; } }
             if(args.Length==2&&args[0]=="--runtime-test") return Tests.Runtime(args[1]);
+            if(args.Length==2&&args[0]=="--verify-public-release") {
+                string status=""; string file=new ReleaseUpdater(s=>status=s).Check(true).GetAwaiter().GetResult();
+                File.WriteAllText(args[1],status+Environment.NewLine+(file??"No verified installer")); return file==null?1:0;
+            }
             bool owner;
             using(var mutex=new Mutex(true,"Local\\USBPal."+Environment.UserName,out owner)) {
                 if(!owner) { MessageBox.Show("USBPal is already recording. Open it from the UP tray icon.","USBPal"); return 0; }

@@ -31,7 +31,7 @@ namespace USBPal {
             var title=new Label { Text="UP   USBPal  /  USB event explorer     v"+ReleaseUpdater.Current.ToString(3),Dock=DockStyle.Top,Height=64,Padding=new Padding(16,18,0,0),Font=new Font("Segoe UI",18,FontStyle.Bold) };
             var toolbar=new FlowLayoutPanel { Dock=DockStyle.Top,Height=76,Padding=new Padding(12,8,4,4),AutoScroll=true,WrapContents=true };
             range.Items.AddRange(new object[]{"Last hour","Last 24 hours","Last 7 days","All history"}); range.SelectedIndex=1;
-            kind.Items.AddRange(new object[]{"All events","Connected","Disconnected","Flapping","Problem changed","Enumerated","Observed"}); kind.SelectedIndex=0;
+            kind.Items.AddRange(new object[]{"All events","Connected","Disconnected","Flapping","Problem changed","Enumerated","Started","Windows event","Observed"}); kind.SelectedIndex=0;
             toolbar.Controls.AddRange(new Control[]{new Label { Text="Search",AutoSize=true,Margin=new Padding(0,5,6,0) },search,range,kind,descendants});
             var clear=new Button { Text="All devices",AutoSize=true }; clear.Click+=delegate { selected=""; tree.SelectedNode=null; ApplyFilter(); }; toolbar.Controls.Add(clear);
             var export=new Button { Text="Export CSV",AutoSize=true }; export.Click+=delegate { Export(); }; toolbar.Controls.Add(export);

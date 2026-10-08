@@ -30,6 +30,12 @@ namespace USBPal {
                 Check(events.Count(e=>e.Kind=="Flapping")==1,"Expired flap window");
                 device.Problem=43; state.Transition(device,true,t.AddMinutes(7),"Reconcile",false); device.Problem=0; state.Transition(device,true,t.AddMinutes(8),"Reconcile",false);
                 Check(events.Any(e=>e.Kind=="Problem changed"),"Problem transitions");
+                var nativeEvents=new List<UsbEvent>(); var native=new DeviceState(nativeEvents.Add);
+                var fresh=new Dictionary<string,Device>(StringComparer.OrdinalIgnoreCase) { { device.Id,device } };
+                native.Native(8,device.Id,t,fresh); native.Native(9,device.Id,t.AddMilliseconds(10),fresh); native.Native(8,device.Id,t.AddMilliseconds(20),fresh); native.Native(8,device.Id,t.AddMilliseconds(30),fresh);
+                Check(nativeEvents.Count(e=>e.Kind=="Connected")==2&&nativeEvents.Count(e=>e.Kind=="Disconnected")==1&&nativeEvents.Count(e=>e.Kind=="Started")==3,"Rapid native flap/restart retention");
+                native.Native(9,"USB\\VANISHED",t,new Dictionary<string,Device>());
+                Check(nativeEvents.Last().Device.Id=="USB\\VANISHED","Unresolved transient USB device");
                 var store=new History(folder); foreach(var e in events) store.Append(e);
                 File.AppendAllText(Directory.GetFiles(folder,"*.jsonl")[0],"{broken\n"); int bad;
                 var read=store.Read(t.AddSeconds(-1),t.AddHours(1),"","",true,out bad);

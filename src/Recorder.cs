@@ -47,6 +47,7 @@ namespace USBPal {
                     } catch(Exception ex) { Status="Recording error: "+ex.Message; }
                     wake.WaitOne(3000);
                 }
+                notifications.Dispose(); windowsEvents.Dispose();
                 Session("Recording stopped","USBPal exited or restarted for an update.");
                 Flush();
             } catch(Exception ex) { Status="Recorder stopped: "+ex.Message; }

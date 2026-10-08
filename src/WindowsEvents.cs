@@ -28,6 +28,6 @@ namespace USBPal {
                 save(new UsbEvent { Utc=(record.TimeCreated??DateTime.Now).ToUniversalTime().ToString("o"),Kind="Windows event",Source=record.ProviderName+" / "+record.Id,Device=device,Message=(message??string.Join("; ",data))+" [Record "+record.RecordId+"]" });
             } catch(Exception e) { Status=" • System event read error: "+e.Message; }
         }
-        public void Dispose() { if(watcher!=null) { watcher.Enabled=false; watcher.EventRecordWritten-=Received; watcher.Dispose(); } }
+        public void Dispose() { if(watcher!=null) { watcher.Enabled=false; watcher.EventRecordWritten-=Received; watcher.Dispose(); watcher=null; } }
     }
 }

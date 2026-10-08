@@ -24,7 +24,7 @@ namespace USBPal {
                 DateTime day; if(!DateTime.TryParseExact(Path.GetFileNameWithoutExtension(file),"yyyy-MM-dd",null,System.Globalization.DateTimeStyles.None,out day)||day.Date<since.Date||day.Date>until.Date) continue;
                 using(var stream=new FileStream(file,FileMode.Open,FileAccess.Read,FileShare.ReadWrite)) using(var reader=new StreamReader(stream)) {
                     string line; while((line=reader.ReadLine())!=null) {
-                        UsbEvent e; try { e=serializer.Deserialize<UsbEvent>(line); if(e==null||e.Device==null||e.Utc==null) throw new InvalidDataException(); if(e.Time<since||e.Time>until) continue; }
+                        UsbEvent e; try { e=serializer.Deserialize<UsbEvent>(line); if(e==null||e.Device==null||e.Utc==null||e.Device.Id==null||e.Device.Ancestors==null) throw new InvalidDataException(); if(e.Time<since||e.Time>until) continue; }
                         catch { damaged++; continue; }
                         if(!Matches(e,search,selected,descendants)) continue; result.Add(e);
                     }
@@ -66,7 +66,7 @@ namespace USBPal {
         }
         public void Native(uint action,string id,DateTime time,Dictionary<string,Device> fresh) {
             Device d; if(!fresh.TryGetValue(id,out d)&&!Known.TryGetValue(id,out d)) {
-                if(!id.StartsWith("USB\\",StringComparison.OrdinalIgnoreCase)) return;
+                if(!id.StartsWith("USB\\",StringComparison.OrdinalIgnoreCase)&&!id.StartsWith("USB4\\",StringComparison.OrdinalIgnoreCase)) return;
                 d=new Device { Id=id,Name=id }; // Preserve even a device that vanished before enumeration.
             }
             if(action==9) Transition(d,false,time,"Notification",false);

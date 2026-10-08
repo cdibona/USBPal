@@ -45,6 +45,10 @@ namespace USBPal {
             grid.DefaultCellStyle.BackColor=Color.FromArgb(23,32,43); grid.DefaultCellStyle.ForeColor=ForeColor; grid.DefaultCellStyle.SelectionBackColor=Color.FromArgb(37,86,99); grid.GridColor=Color.FromArgb(39,51,64);
             tree.BackColor=BackColor; tree.ForeColor=ForeColor; tree.ItemHeight=26; details.BackColor=Color.FromArgb(23,32,43); details.ForeColor=ForeColor;
             search.ForeColor=Color.Black; range.ForeColor=Color.Black; kind.ForeColor=Color.Black;
+            foreach(var combo in new[]{range,kind}) {
+                combo.DrawMode=DrawMode.OwnerDrawFixed;
+                combo.DrawItem+=delegate(object sender,DrawItemEventArgs e) { var c=(ComboBox)sender; e.DrawBackground(); if(e.Index>=0) TextRenderer.DrawText(e.Graphics,c.Items[e.Index].ToString(),c.Font,e.Bounds,Color.Black,TextFormatFlags.Left|TextFormatFlags.VerticalCenter); e.DrawFocusRectangle(); };
+            }
             search.TextChanged+=delegate { ApplyFilter(); }; kind.SelectedIndexChanged+=delegate { ApplyFilter(); }; descendants.CheckedChanged+=delegate { ApplyFilter(); };
             range.SelectedIndexChanged+=delegate { dirty=true; LoadHistory(); };
             tree.AfterSelect+=delegate { if(rebuilding) return; selected=tree.SelectedNode==null?"":tree.SelectedNode.Name; ShowDevice(tree.SelectedNode==null?null:tree.SelectedNode.Tag as Device); ApplyFilter(); };
@@ -69,12 +73,14 @@ namespace USBPal {
             var devices=new Dictionary<string,Device>(StringComparer.OrdinalIgnoreCase);
             foreach(var e in events) if(e.Device.Id.Length>0) { var d=e.Device; devices[d.Id]=new Device { Id=d.Id,Name=d.Name,Parent=d.Parent,Ancestors=d.Ancestors,Class=d.Class,Service=d.Service,Manufacturer=d.Manufacturer,Location=d.Location,Problem=d.Problem,Present=false }; }
             foreach(var d in recorder.Snapshot()) devices[d.Id]=d;
+            string top=tree.TopNode==null?"":tree.TopNode.Name;
             var expanded=new HashSet<string>(); foreach(TreeNode n in AllNodes(tree.Nodes)) if(n.IsExpanded) expanded.Add(n.Name);
             rebuilding=true; tree.BeginUpdate(); tree.Nodes.Clear();
             var root=new TreeNode(Environment.MachineName+" / motherboard") { Name="" }; tree.Nodes.Add(root);
             var nodes=devices.Values.ToDictionary(d=>d.Id,d=>new TreeNode(d.Name+(d.Present?"":"  [offline]")) { Name=d.Id,Tag=d,ToolTipText=Describe(d),ForeColor=d.Present?ForeColor:Color.FromArgb(139,155,173) },StringComparer.OrdinalIgnoreCase);
             foreach(var d in devices.Values.OrderBy(d=>d.Name)) { TreeNode parent; if(d.Parent!=d.Id&&nodes.TryGetValue(d.Parent,out parent)&&!CreatesCycle(d,devices)) parent.Nodes.Add(nodes[d.Id]); else root.Nodes.Add(nodes[d.Id]); }
             root.Expand(); foreach(var node in nodes.Values) { if(expanded.Contains(node.Name)||expanded.Count==0) node.Expand(); if(node.Name==selected) tree.SelectedNode=node; }
+            TreeNode topNode; tree.TopNode=nodes.TryGetValue(top,out topNode)?topNode:root;
             tree.EndUpdate(); rebuilding=false;
         }
         static bool CreatesCycle(Device d,Dictionary<string,Device> map) { var seen=new HashSet<string>(StringComparer.OrdinalIgnoreCase); while(d!=null) { if(!seen.Add(d.Id)) return true; Device p; d=map.TryGetValue(d.Parent,out p)?p:null; } return false; }

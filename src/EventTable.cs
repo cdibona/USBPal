@@ -14,10 +14,9 @@ namespace USBPal {
         bool updating;
         public int RefreshCount { get; private set; }
         public EventTable() {
-            DoubleBuffered=true; VirtualMode=true;
+            DoubleBuffered=true; VirtualMode=true; ShowCellToolTips=false;
             CellValueNeeded+=delegate(object s,DataGridViewCellValueEventArgs e) { if(e.RowIndex<rows.Count) e.Value=rows[e.RowIndex].Cells[e.ColumnIndex]; };
             CellFormatting+=delegate(object s,DataGridViewCellFormattingEventArgs e) { if(e.RowIndex>=0&&e.RowIndex<rows.Count&&rows[e.RowIndex].Alert) e.CellStyle.ForeColor=System.Drawing.Color.FromArgb(255,190,99); };
-            CellToolTipTextNeeded+=delegate(object s,DataGridViewCellToolTipTextNeededEventArgs e) { if(e.RowIndex>=0&&e.RowIndex<rows.Count) e.ToolTipText=string.Join(" • ",rows[e.RowIndex].Cells)+Environment.NewLine+rows[e.RowIndex].Event.Device.Id; };
             ColumnHeaderMouseClick+=delegate(object s,DataGridViewCellMouseEventArgs e) { ascending=sortColumn==e.ColumnIndex?!ascending:true; sortColumn=e.ColumnIndex; SetRows(rows,true); };
         }
         public UsbEvent SelectedEvent { get { return SelectedRows.Count>0&&SelectedRows[0].Index<rows.Count?rows[SelectedRows[0].Index].Event:null; } }

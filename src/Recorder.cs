@@ -13,6 +13,8 @@ namespace USBPal {
         readonly DeviceState state;
         readonly object gate=new object();
         readonly Thread worker;
+        readonly System.Diagnostics.Stopwatch uptime=System.Diagnostics.Stopwatch.StartNew();
+        public TimeSpan Uptime { get { return uptime.Elapsed; } }
         readonly Queue<UsbEvent> outbox=new Queue<UsbEvent>();
         readonly object writeGate=new object();
         DeviceNotifications notifications;

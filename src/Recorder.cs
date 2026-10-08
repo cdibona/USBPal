@@ -13,7 +13,10 @@ namespace USBPal {
         readonly DeviceState state;
         readonly object gate=new object();
         readonly Thread worker;
+        readonly Queue<UsbEvent> outbox=new Queue<UsbEvent>();
+        readonly object writeGate=new object();
         DeviceNotifications notifications;
+        WindowsEvents windowsEvents;
         volatile bool stopping;
         public volatile string Status="Starting recorder...";
         public volatile int Revision;
@@ -21,12 +24,14 @@ namespace USBPal {
             this.history=history; state=new DeviceState(Save);
             worker=new Thread(Run) { IsBackground=true,Name="USBPal recorder" }; worker.Start();
         }
-        void Save(UsbEvent e) { history.Append(e); Revision++; }
+        void Save(UsbEvent e) { lock(writeGate) outbox.Enqueue(e); Revision++; }
+        void Flush() { lock(writeGate) while(outbox.Count>0) { history.Append(outbox.Peek()); outbox.Dequeue(); } }
         public void Session(string kind,string message) { Save(new UsbEvent { Utc=DateTime.UtcNow.ToString("o"),Kind=kind,Source="Recorder",Device=new Device { Name=Environment.MachineName },Message=message }); }
         public Device[] Snapshot() { lock(gate) return state.Known.Values.ToArray(); }
         void Run() {
             try {
                 notifications=new DeviceNotifications((action,id,time)=>{ pending.Enqueue(new Notice { Action=action,Id=id,Time=time }); wake.Set(); });
+                windowsEvents=new WindowsEvents(Snapshot,Save);
                 Session("Recording started","No events are captured while USBPal is exited, signed out, or asleep.");
                 bool baseline=true;
                 while(!stopping) {
@@ -37,13 +42,15 @@ namespace USBPal {
                             Notice n; while(pending.TryDequeue(out n)) state.Native(n.Action,n.Id,n.Time,current);
                             state.Reconcile(current,false);
                         }
-                        Status="Recording • "+current.Count+" topology nodes • last scan "+DateTime.Now.ToString("HH:mm:ss");
+                        Flush();
+                        Status="Recording • "+current.Count+" topology nodes • last scan "+DateTime.Now.ToString("HH:mm:ss")+windowsEvents.Status;
                     } catch(Exception ex) { Status="Recording error: "+ex.Message; }
                     wake.WaitOne(3000);
                 }
                 Session("Recording stopped","USBPal exited or restarted for an update.");
+                Flush();
             } catch(Exception ex) { Status="Recorder stopped: "+ex.Message; }
-            finally { if(notifications!=null) notifications.Dispose(); }
+            finally { if(notifications!=null) notifications.Dispose(); if(windowsEvents!=null) windowsEvents.Dispose(); }
         }
         public void Dispose() { stopping=true; wake.Set(); worker.Join(); wake.Dispose(); }
     }

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160">
+ <rect width="560" height="160" rx="28" fill="#101720"/>
+ <g stroke="#56e1c3" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+  <path d="M66 128V42M66 82L38 66V45M66 104L100 83V64"/>
+ </g>
+ <path d="M66 23L52 44H80Z" fill="#56e1c3"/>
+ <circle cx="38" cy="37" r="10" fill="#56e1c3"/>
+ <rect x="90" y="48" width="20" height="20" rx="2" fill="#56e1c3"/>
+ <circle cx="66" cy="132" r="12" fill="#56e1c3"/>
+ <text x="147" y="92" font-family="Segoe UI, sans-serif" font-weight="700" font-size="59" fill="#deE9f2">USBPal</text>
+ <text x="150" y="123" font-family="Segoe UI, sans-serif" font-size="19" fill="#8b9bad">Every connection has a history.</text>
+</svg>

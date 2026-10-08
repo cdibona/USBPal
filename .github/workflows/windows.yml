@@ -15,7 +15,7 @@ jobs:
       - name: Choose version
         shell: pwsh
         run: |
-          $version = '0.2.0'
+          $version = '0.2.1'
           if ($env:GITHUB_REF_TYPE -eq 'tag') {
             if ($env:GITHUB_REF_NAME -notmatch '^v\d+\.\d+\.\d+$') { throw 'Use a vMAJOR.MINOR.PATCH tag' }
             $version = $env:GITHUB_REF_NAME.Substring(1)

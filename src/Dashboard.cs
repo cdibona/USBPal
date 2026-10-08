@@ -57,10 +57,6 @@ namespace USBPal {
         internal Button SaveNicknameButton { get { return saveName; } }
         internal Button ResetNicknameButton { get { return resetName; } }
         internal string ActivitySummary { get { return activityStatus.Text; } }
-        internal TextBox DetailsPanel { get { return details; } }
-        internal LinkLabel ReleaseLink { get { return releaseLink; } }
-        internal LinkLabel WebsiteLink { get { return websiteLink; } }
-        internal string UptimeText { get { return uptime.Text; } }
         public event Action UpdateRequested;
         public Dashboard(Recorder recorder,History history) {
             this.recorder=recorder; this.history=history; names=new DeviceNames(Path.GetDirectoryName(history.Folder));

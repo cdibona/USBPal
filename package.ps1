@@ -1,4 +1,4 @@
-param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.2.0', [string]$Compiler)
+param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.2.1', [string]$Compiler)
 $ErrorActionPreference = 'Stop'
 if ((Get-Content "$PSScriptRoot/installer/USBPal.iss" -Raw) -notmatch "HasParameter\('/USBPALUPDATE'\)") { throw 'Installer must recognize the updater restart flag.' }
 & "$PSScriptRoot/build.ps1" -Version $Version

@@ -1,7 +1,7 @@
-# USBPal 0.2.0
+# USBPal 0.2.1
 
-- Local device nicknames, defaulting to the reported hardware maker when meaningful, with editable names and a reset button. Names persist for offline devices and appear in search, history, activity and CSV exports. No USB stack or Windows device properties are modified.
-- A plain-language bottom log across all USB buses, independent of the filters above, with reconnect durations and prominent flapping summaries.
-- Reduced refresh flicker: tree nodes update in place and buffered virtual tables preserve selection, sorting, scroll position and unsaved nickname edits.
+- Replaced floating device and event tooltips with a fixed details panel below the all-bus activity log. Select an item to read its full details.
+- Consolidated save/update messages and recording status at the bottom of the window.
+- Added a footer link to the installed GitHub release, live app uptime, and a halogenica.com link after uptime.
 
-Existing history and preferences are preserved. Requires Windows 10/11 x64 and .NET Framework 4.8+. Installers remain unsigned.
+Existing nicknames, history and preferences are preserved. Requires Windows 10/11 x64 and .NET Framework 4.8+. Installers remain unsigned.

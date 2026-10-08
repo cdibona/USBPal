@@ -22,7 +22,9 @@ Select a device or hub in the tree, edit **Local nickname**, and click **Save ni
 
 Nicknames apply to the tree, history table, search, all-bus activity and CSV export. They are saved by Windows instance ID in `%LOCALAPPDATA%\USBPal\device-nicknames.json`, including for offline devices. These are USBPal display labels only: **no writes to the USB stack, device firmware, drivers, or Windows device properties**. Original JSONL history is not rewritten. Moving a device without a stable serial identity to another port can require a new nickname.
 
-The bottom log always shows the latest 24 hours across **all USB buses**, regardless of the selected device, search, event type, or time range above. It shows up to 500 recent meaningful events, omitting baseline enumeration noise. Plain-language entries explain disconnects, reconnect duration, device problems, recording gaps and power transitions. Double-click an entry to select its device; hover for full text and instance ID.
+The bottom log always shows the latest 24 hours across **all USB buses**, regardless of the selected device, search, event type, or time range above. It shows up to 500 recent meaningful events, omitting baseline enumeration noise. Plain-language entries explain disconnects, reconnect duration, device problems, recording gaps and power transitions. Double-click an entry to select its device. Select a device or event to read full details in the fixed panel below the activity log; floating tooltips are disabled.
+
+The bottommost footer keeps save/update messages and recording status visible. Its release link opens the installed version's GitHub release; **App uptime** measures the current USBPal session, including time in the tray, and resets when USBPal restarts. The website link after uptime opens [halogenica.com](https://halogenica.com).
 
 An amber **POSSIBLE FLAPPING** summary names devices with at least three logged disconnects in the past five minutes, independently of the upper filters. Historical flap alerts remain in the log after the live summary clears. Reconnection durations describe observed events and can span recording gaps; scan-derived events explicitly indicate uncertain timing.
 
@@ -60,18 +62,18 @@ Installers are currently unsigned. SHA-256 checks verify download integrity; the
 ## Development
 
 ```powershell
-./build.ps1 -Version 0.2.0
-./bin/v0.2.0/USBPal.exe --show
-./package.ps1 -Version 0.2.0 -Compiler 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+./build.ps1 -Version 0.2.1
+./bin/v0.2.1/USBPal.exe --show
+./package.ps1 -Version 0.2.1 -Compiler 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
 ```
 
 Build uses the C# compiler shipped with Windows .NET Framework. Distribute both `USBPal.exe` and `USBPal.exe.config` for portable use. Inno Setup 6 is required only for packaging. `assets/make-icon.ps1` regenerates the multi-resolution UP icon; the USB logo is editable SVG.
 
 ```powershell
 # Each command below exits; wait for the process when scripting tests.
-./bin/v0.2.0/USBPal.exe --self-test
-./bin/v0.2.0/USBPal.exe --probe C:/absolute/path/topology.json
-./bin/v0.2.0/USBPal.exe --runtime-test C:/absolute/path/test-output
+./bin/v0.2.1/USBPal.exe --self-test
+./bin/v0.2.1/USBPal.exe --probe C:/absolute/path/topology.json
+./bin/v0.2.1/USBPal.exe --runtime-test C:/absolute/path/test-output
 ```
 
 `--self-test` checks transition deduplication, baseline semantics, flapping thresholds/expiry, historical ancestry filtering, event immutability, problem changes, history recovery, UTC filtering, CSV escaping, and updater validation. Results are beside the executable. `--runtime-test` reads real hardware, checks notification registration and persistence, renders a dashboard PNG, tests close/reopen, and exits. It uses isolated history, makes no startup changes and performs no update checks. Real hardware tests are local because hosted CI runners may have no USB tree.

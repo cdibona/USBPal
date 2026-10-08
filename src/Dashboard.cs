@@ -7,12 +7,23 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace USBPal {
+    internal sealed class FilterChoice : Button {
+        public readonly List<object> Items=new List<object>();
+        readonly ContextMenuStrip menu=new ContextMenuStrip();
+        int selected=-1;
+        public event EventHandler SelectedIndexChanged;
+        public object SelectedItem { get { return selected<0?null:Items[selected]; } }
+        public int SelectedIndex { get { return selected; } set { if(selected==value) return; selected=value; Text=Items[value]+" ▾"; if(SelectedIndexChanged!=null) SelectedIndexChanged(this,EventArgs.Empty); } }
+        public FilterChoice() { Height=25; }
+        protected override void OnClick(EventArgs e) { base.OnClick(e); menu.Items.Clear(); for(int i=0;i<Items.Count;i++) { int index=i; var item=new ToolStripMenuItem(Items[i].ToString()) { Checked=i==selected }; item.Click+=delegate { SelectedIndex=index; }; menu.Items.Add(item); } menu.Show(this,new Point(0,Height)); }
+        protected override void Dispose(bool disposing) { if(disposing) menu.Dispose(); base.Dispose(disposing); }
+    }
     internal sealed class Dashboard : Form {
         readonly Recorder recorder; readonly History history;
         readonly TreeView tree=new TreeView { Dock=DockStyle.Fill,HideSelection=false,ShowNodeToolTips=true,BorderStyle=BorderStyle.None };
         readonly TextBox search=new TextBox { Width=250,AccessibleName="Search event history" };
-        readonly ComboBox range=new ComboBox { DropDownStyle=ComboBoxStyle.DropDownList,Width=105 };
-        readonly ComboBox kind=new ComboBox { DropDownStyle=ComboBoxStyle.DropDownList,Width=125 };
+        readonly FilterChoice range=new FilterChoice { Width=115,AccessibleName="History time range" };
+        readonly FilterChoice kind=new FilterChoice { Width=130,AccessibleName="Event type" };
         readonly CheckBox descendants=new CheckBox { Text="Include descendants",Checked=true,AutoSize=true };
         readonly Label metrics=new Label { Dock=DockStyle.Top,Height=62,Padding=new Padding(16,12,8,0),Font=new Font("Segoe UI",12),ForeColor=Color.FromArgb(86,225,195) };
         readonly Label status=new Label { Dock=DockStyle.Bottom,Height=30,Padding=new Padding(12,5,0,0) };
@@ -44,11 +55,7 @@ namespace USBPal {
             grid.EnableHeadersVisualStyles=false; grid.ColumnHeadersDefaultCellStyle.BackColor=Color.FromArgb(34,47,61); grid.ColumnHeadersDefaultCellStyle.ForeColor=ForeColor; grid.ColumnHeadersHeight=34; grid.RowTemplate.Height=28;
             grid.DefaultCellStyle.BackColor=Color.FromArgb(23,32,43); grid.DefaultCellStyle.ForeColor=ForeColor; grid.DefaultCellStyle.SelectionBackColor=Color.FromArgb(37,86,99); grid.GridColor=Color.FromArgb(39,51,64);
             tree.BackColor=BackColor; tree.ForeColor=ForeColor; tree.ItemHeight=26; details.BackColor=Color.FromArgb(23,32,43); details.ForeColor=ForeColor;
-            search.ForeColor=Color.Black; range.ForeColor=Color.Black; kind.ForeColor=Color.Black;
-            foreach(var combo in new[]{range,kind}) {
-                combo.DrawMode=DrawMode.OwnerDrawFixed;
-                combo.DrawItem+=delegate(object sender,DrawItemEventArgs e) { var c=(ComboBox)sender; e.DrawBackground(); if(e.Index>=0) TextRenderer.DrawText(e.Graphics,c.Items[e.Index].ToString(),c.Font,e.Bounds,Color.Black,TextFormatFlags.Left|TextFormatFlags.VerticalCenter); e.DrawFocusRectangle(); };
-            }
+            search.ForeColor=Color.Black;
             search.TextChanged+=delegate { ApplyFilter(); }; kind.SelectedIndexChanged+=delegate { ApplyFilter(); }; descendants.CheckedChanged+=delegate { ApplyFilter(); };
             range.SelectedIndexChanged+=delegate { dirty=true; LoadHistory(); };
             tree.AfterSelect+=delegate { if(rebuilding) return; selected=tree.SelectedNode==null?"":tree.SelectedNode.Name; ShowDevice(tree.SelectedNode==null?null:tree.SelectedNode.Tag as Device); ApplyFilter(); };

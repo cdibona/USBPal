@@ -1,0 +1,6 @@
+.reference/
+bin/
+obj/
+dist/
+test-output/
+*.user

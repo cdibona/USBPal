@@ -1,0 +1,77 @@
+#ifndef AppVersion
+  #define AppVersion "0.1.0"
+#endif
+#ifndef AppIdentity
+  #define AppIdentity "USBPal.Windows"
+#endif
+#ifndef AppDisplayName
+  #define AppDisplayName "USBPal"
+#endif
+[Setup]
+AppId={#AppIdentity}
+AppName={#AppDisplayName}
+AppVersion={#AppVersion}
+AppPublisher=Chris DiBona
+AppPublisherURL=https://github.com/cdibona/USBPal
+DefaultDirName={localappdata}\Programs\USBPal
+DefaultGroupName={#AppDisplayName}
+PrivilegesRequired=lowest
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+MinVersion=10.0
+OutputDir=..\dist
+OutputBaseFilename=USBPal-Setup-{#AppVersion}-win-x64
+Compression=lzma2
+SolidCompression=yes
+WizardStyle=modern
+CloseApplications=yes
+RestartApplications=no
+UninstallDisplayIcon={app}\USBPal.exe
+SetupIconFile=..\assets\USBPal.ico
+LicenseFile=..\LICENSE
+DisableProgramGroupPage=yes
+UsePreviousTasks=yes
+[Files]
+Source: "..\bin\v{#AppVersion}\USBPal.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\v{#AppVersion}\USBPal.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+[Tasks]
+Name: "startup"; Description: "Start USBPal in the tray when I sign in"; Flags: checkedonce
+[Icons]
+Name: "{group}\USBPal"; Filename: "{app}\USBPal.exe"
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "USBPal"; ValueData: """{app}\USBPal.exe"" --background"; Tasks: startup; Flags: uninsdeletevalue; Check: ShouldSetStartup
+[Run]
+Filename: "{app}\USBPal.exe"; Parameters: "{code:LaunchParameters}"; Flags: nowait; Check: ShouldLaunch
+[Code]
+function HasParameter(Value: String): Boolean;
+var I: Integer;
+begin
+  Result := False;
+  for I := 1 to ParamCount do
+    if CompareText(ParamStr(I), Value) = 0 then Result := True;
+end;
+function IsUSBPalUpdate: Boolean;
+begin
+  Result := HasParameter('/POWERPALUPDATE');
+end;
+function LaunchParameters(Param: String): String;
+begin
+  if IsUSBPalUpdate then Result := '--background'
+  else Result := '--show';
+end;
+function ShouldSetStartup: Boolean;
+begin
+  Result := (not IsUSBPalUpdate) or RegValueExists(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'USBPal');
+end;
+function ShouldLaunch: Boolean;
+begin
+  Result := not HasParameter('/NORUN');
+end;
+function InitializeSetup: Boolean;
+var Release: Cardinal;
+begin
+  Result := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', Release) and (Release >= 528040);
+  if not Result then MsgBox('USBPal needs .NET Framework 4.8 or later. Install it from Microsoft, then run this installer again.', mbError, MB_OK);
+end;
+
